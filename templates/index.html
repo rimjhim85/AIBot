@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div id="chat-window">
+    <header>
+        <h3><i class="fa-solid fa-wand-magic-sparkles"></i>Autobot</h3>
+        <div class="header-btns">
+            <button class="icon-btn" id="theme-btn"><i class="fa-solid fa-moon"></i></button>
+            <button class="icon-btn" id="clear-btn"><i class="fa-solid fa-trash"></i></button>
+        </div>
+    </header>
+
+    <div id="messages">
+        </div>
+
+    <div id="input-area">
+        <div id="wave-container">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+
+        <div class="input-controls">
+            <button class="icon-btn" id="mic-btn" title="Speak"><i class="fa-solid fa-microphone"></i></button>
+            <input type="text" id="user-input" placeholder="Type or speak..." autocomplete="off">
+            <button class="icon-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
