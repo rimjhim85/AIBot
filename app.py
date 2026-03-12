@@ -23,7 +23,7 @@ def chat():
         
         # This sends the request to the older, more stable 1.5 model
         response = client.models.generate_content(
-            model="gemini-flash-latest",
+            model="gemini-1.5-flash",
             contents=user_message
         )
 
