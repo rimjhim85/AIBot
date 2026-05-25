@@ -63,17 +63,45 @@ function speak(text) {
 // --- 4. COPY TO CLIPBOARD ---
 async function copyToClipboard(text, btn) {
     try {
+        // Modern secure framework
         await navigator.clipboard.writeText(text);
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-        btn.style.color = "#28a745"; // Success green
-        setTimeout(() => { 
-            btn.innerHTML = originalHTML; 
-            btn.style.color = "";
-        }, 2000);
+        showSuccessState(btn);
     } catch (err) {
-        console.error('Clipboard error: ', err);
+        console.warn('Modern clipboard API failed or blocked. Attempting manual element fallback...', err);
+        
+        // Legacy fallback approach for non-localhost HTTP networks
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed"; // Keep it offscreen
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            showSuccessState(btn);
+        } catch (fallbackErr) {
+            console.error('System completely failed to access clipboard stack: ', fallbackErr);
+        }
+        document.body.removeChild(textArea);
     }
+}
+
+// Handles updating your FontAwesome checking animations
+function showSuccessState(btn) {
+    const originalHTML = btn.innerHTML;
+    
+    // 1. Update UI HTML content structure
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+    
+    // 2. Add the styling class instead of using inline style modifications
+    btn.classList.add("copied");
+    
+    // 3. Clear states back to standard layout properties after 2 seconds
+    setTimeout(() => { 
+        btn.innerHTML = originalHTML; 
+        btn.classList.remove("copied");
+    }, 2000);
 }
 
 // --- 5. UI HELPERS (Typing & Scrolling) ---
