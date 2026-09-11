@@ -201,3 +201,29 @@ input {
     0%, 100% { transform: scaleY(1); }
     50% { transform: scaleY(2); }
 }
+/* Ensure the image upload label matches standard icon button behaviors */
+#upload-label {
+    color: var(--text-main);
+    transition: 0.2s;
+}
+
+#upload-label:hover {
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+/* Formatting for image media sent directly within conversation bubbles */
+.bubble img.chat-attached-image {
+    max-width: 100%;
+    max-height: 180px;
+    border-radius: 14px;
+    margin-bottom: 6px;
+    display: block;
+    object-fit: contain;
+    border: 1px solid var(--border);
+}
+
+/* Custom adjustment to make sure bot and user backgrounds scale gracefully with image content */
+.user img.chat-attached-image {
+    border-color: rgba(255, 255, 255, 0.2);
+}

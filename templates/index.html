@@ -30,7 +30,19 @@
             <div class="wave-bar"></div>
         </div>
 
+        <!-- NEW: Image thumbnail preview box placed directly above the input line -->
+        <div id="preview-container" style="display: none; position: relative; margin-bottom: 12px; width: fit-content;">
+            <img id="image-preview" src="" alt="Selected Preview" style="max-width: 70px; max-height: 70px; object-fit: cover; border-radius: 12px; border: 2px solid var(--accent);">
+            <span id="remove-preview" style="position: absolute; top: -6px; right: -6px; background: #ff4d4d; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">✕</span>
+        </div>
+
         <div class="input-controls">
+            <!-- NEW: Image upload icon button & hidden selector input -->
+            <label for="image-input" class="icon-btn" id="upload-label" title="Upload Image" style="padding: 0 8px; cursor: pointer; display: flex; align-items: center;">
+                <i class="fa-solid fa-image"></i>
+            </label>
+            <input type="file" id="image-input" accept="image/*" style="display: none;">
+
             <button class="icon-btn" id="mic-btn" title="Speak"><i class="fa-solid fa-microphone"></i></button>
             <input type="text" id="user-input" placeholder="Type or speak..." autocomplete="off">
             <button class="icon-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>

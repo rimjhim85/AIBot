@@ -7,6 +7,11 @@ const themeBtn = document.getElementById('theme-btn');
 const sendBtn = document.getElementById('send-btn');
 const clearBtn = document.getElementById('clear-btn');
 
+// NEW SELECTORS: File picker elements
+const imageInput = document.getElementById('image-input');
+const previewContainer = document.getElementById('preview-container'); // Optional wrapper for displaying thumb
+const imagePreview = document.getElementById('image-preview'); // Optional target element inside container
+
 // --- 1. THEME MANAGEMENT ---
 function initTheme() {
     const isDark = localStorage.getItem('theme') === 'dark';
@@ -56,48 +61,36 @@ if (SpeechRecognition) {
 function speak(text) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    // You can customize voice here: utterance.pitch = 1; utterance.rate = 1;
     window.speechSynthesis.speak(utterance);
 }
 
 // --- 4. COPY TO CLIPBOARD ---
 async function copyToClipboard(text, btn) {
     try {
-        // Modern secure framework
         await navigator.clipboard.writeText(text);
         showSuccessState(btn);
     } catch (err) {
-        console.warn('Modern clipboard API failed or blocked. Attempting manual element fallback...', err);
-        
-        // Legacy fallback approach for non-localhost HTTP networks
+        console.warn('Modern clipboard API failed. Running manual fallback...', err);
         const textArea = document.createElement("textarea");
         textArea.value = text;
-        textArea.style.position = "fixed"; // Keep it offscreen
+        textArea.style.position = "fixed"; 
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-
         try {
             document.execCommand('copy');
             showSuccessState(btn);
         } catch (fallbackErr) {
-            console.error('System completely failed to access clipboard stack: ', fallbackErr);
+            console.error('System failed to access clipboard stack: ', fallbackErr);
         }
         document.body.removeChild(textArea);
     }
 }
 
-// Handles updating your FontAwesome checking animations
 function showSuccessState(btn) {
     const originalHTML = btn.innerHTML;
-    
-    // 1. Update UI HTML content structure
     btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-    
-    // 2. Add the styling class instead of using inline style modifications
     btn.classList.add("copied");
-    
-    // 3. Clear states back to standard layout properties after 2 seconds
     setTimeout(() => { 
         btn.innerHTML = originalHTML; 
         btn.classList.remove("copied");
@@ -118,14 +111,44 @@ function scrollToBottom() {
     messages.scrollTop = messages.scrollHeight;
 }
 
+// NEW INTERACTION: Show image preview before sending if a file is picked
+if (imageInput) {
+    imageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file && imagePreview && previewContainer) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
 // --- 6. CHAT CORE LOGIC ---
-function addMessage(text, role) {
+// CHANGED: Added dynamic handling for rendering image paths inside the message blocks
+function addMessage(text, role, imageUrl = null) {
     const div = document.createElement('div');
     div.className = `bubble ${role}`;
     
-    const textSpan = document.createElement('span');
-    textSpan.innerText = text;
-    div.appendChild(textSpan);
+    // Render image if one was passed in
+    if (imageUrl) {
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.className = 'chat-attached-image';
+        img.style.maxWidth = '200px';
+        img.style.borderRadius = '8px';
+        img.style.marginBottom = '5px';
+        img.style.display = 'block';
+        div.appendChild(img);
+    }
+
+    if (text) {
+        const textSpan = document.createElement('span');
+        textSpan.innerText = text;
+        div.appendChild(textSpan);
+    }
 
     if (role === 'bot') {
         const actionContainer = document.createElement('div');
@@ -152,10 +175,30 @@ function addMessage(text, role) {
 
 async function sendMessage() {
     const text = input.value.trim();
-    if (!text) return;
+    const fileSelected = imageInput && imageInput.files ? imageInput.files[0] : null;
+    
+    if (!text && !fileSelected) return;
 
-    addMessage(text, 'user');
+    // Use absolute dynamic blob generation for rendering user image bubble instantly
+    let localImageBlobUrl = null;
+    if (fileSelected) {
+        localImageBlobUrl = URL.createObjectURL(fileSelected);
+    }
+
+    // Add local user bubble message
+    addMessage(text, 'user', localImageBlobUrl);
+    
+    // Prepare FormData stack container properties
+    const formData = new FormData();
+    formData.append('message', text);
+    if (fileSelected) {
+        formData.append('image', fileSelected);
+    }
+
+    // Reset components immediately
     input.value = '';
+    if (imageInput) imageInput.value = '';
+    if (previewContainer) previewContainer.style.display = 'none';
     
     input.disabled = true;
     const typingIndicator = showTypingIndicator();
@@ -163,8 +206,7 @@ async function sendMessage() {
     try {
         const res = await fetch('/chat', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({message: text})
+            body: formData // Browser auto handles Multi-Part boundary configurations here
         });
         
         const data = await res.json();
@@ -193,5 +235,4 @@ input.onkeypress = (e) => {
     if(e.key === 'Enter') sendMessage(); 
 };
 
-// Initialize theme on load
 initTheme();
